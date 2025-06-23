@@ -3,8 +3,9 @@
 import type { Log } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Terminal, Info, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { Terminal, Info, CheckCircle, AlertCircle, FileText, Download } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type LogsViewProps = {
   logs: Log[];
@@ -33,16 +34,46 @@ export function LogsView({ logs }: LogsViewProps) {
     }
   }
 
+  const handleDownloadLogs = () => {
+    if (!logs.length) return;
+
+    const formattedLogs = logs
+      .slice()
+      .reverse()
+      .map(log => {
+        const timestamp = log.timestamp.toISOString();
+        return `${timestamp} [${log.type}] ${log.message}`;
+      })
+      .join('\n');
+
+    const blob = new Blob([formattedLogs], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const date = new Date().toISOString().split('T')[0];
+    link.download = `trade-pilot-logs-${date}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card className="border-none shadow-none">
-      <CardHeader className="px-2 pt-4">
-        <CardTitle className="flex items-center gap-2">
-            <Terminal className="h-5 w-5" />
-            Activity Logs
-        </CardTitle>
-        <CardDescription>
-            Live feed of API requests, responses, and errors.
-        </CardDescription>
+      <CardHeader className="px-2 pt-4 flex flex-row items-start justify-between">
+        <div>
+          <CardTitle className="flex items-center gap-2">
+              <Terminal className="h-5 w-5" />
+              Activity Logs
+          </CardTitle>
+          <CardDescription>
+              Live feed of API requests, responses, and errors.
+          </CardDescription>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleDownloadLogs} disabled={logs.length === 0}>
+            <Download className="mr-2 h-4 w-4" />
+            Download Logs
+        </Button>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[400px]">
