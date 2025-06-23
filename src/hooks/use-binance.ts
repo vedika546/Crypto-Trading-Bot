@@ -6,13 +6,25 @@ import type { Order, Log, OrderSide, OrderType } from '@/lib/types';
 
 export function useBinance() {
   const { toast } = useToast();
+  const [isMounted, setIsMounted] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [apiSecret, setApiSecret] = useState('');
   const [isApiConnected, setIsApiConnected] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [logs, setLogs] = useState<Log[]>([]);
 
+  const addLog = useCallback((type: Log['type'], message: string) => {
+    const newLog: Log = {
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      type,
+      message,
+    };
+    setLogs(prev => [newLog, ...prev]);
+  }, []);
+
   useEffect(() => {
+    setIsMounted(true);
     try {
       const storedApiKey = localStorage.getItem('binance-apiKey');
       const storedApiSecret = localStorage.getItem('binance-apiSecret');
@@ -26,17 +38,7 @@ export function useBinance() {
     } catch (error) {
         addLog('ERROR', 'Could not access local storage.');
     }
-  }, []);
-
-  const addLog = useCallback((type: Log['type'], message: string) => {
-    const newLog: Log = {
-      id: Date.now().toString(),
-      timestamp: new Date(),
-      type,
-      message,
-    };
-    setLogs(prev => [newLog, ...prev]);
-  }, []);
+  }, [addLog]);
 
   const setApiCredentials = useCallback((key: string, secret: string) => {
     setApiKey(key);
@@ -90,5 +92,5 @@ export function useBinance() {
 
   }, [isApiConnected, addLog, toast]);
 
-  return { apiKey, isApiConnected, setApiCredentials, placeOrder, orders, logs };
+  return { apiKey, isApiConnected, setApiCredentials, placeOrder, orders, logs, isMounted };
 }
