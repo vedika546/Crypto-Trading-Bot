@@ -53,7 +53,7 @@ export function LogsView({ logs }: LogsViewProps) {
                     <span className="mt-0.5">{getLogIcon(log.type)}</span>
                     <div className="flex-1">
                         <span className="text-muted-foreground mr-2">
-                            {log.timestamp.toLocaleTimeString()}
+                            {log.timestamp.toTimeString().slice(0, 8)}
                         </span>
                         <span className={cn('font-medium', getLogColor(log.type))}>
                             [{log.type}]
